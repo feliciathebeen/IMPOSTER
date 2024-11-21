@@ -1,14 +1,15 @@
 from pathlib import Path
 import environ
+import os
 
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
 )
-environ.Env.read_env()
-# BASE_DIR 설정 (프로젝트의 루트 디렉토리)
+# environ.Env.read_env()
+# # BASE_DIR 설정 (프로젝트의 루트 디렉토리)
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
