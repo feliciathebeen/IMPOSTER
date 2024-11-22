@@ -2,6 +2,7 @@ from .models import User
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.password_validation import validate_password
 
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -75,3 +76,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "nickname",
         )
+
+class UserPasswordUpdateSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    def validate(self, data):
+        user = self.context["request"].user
+        if not user.check_password(data["old_password"]):
+            raise serializers.ValidationError({"old_password": "기존 비밀번호와 일치하지 않음"})
+        if data["old_password"] == data["new_password"]:
+            raise serializers.ValidationError({"new_password": "기존 비밀번호랑 다르게 해주셈"})
+        return data
+    
+    def save(self, **kwangs):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["new_password"])
+        user.save()
+        return user

@@ -1,9 +1,10 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login, logout
-from .serializers import UserSignupSerializer, UserSigninSerializer, UserSignoutSerializer
+from .serializers import UserSignupSerializer, UserSigninSerializer, UserSignoutSerializer, UserPasswordUpdateSerializer
 
 @api_view(["POST"])
 def signup_view(request):
@@ -64,3 +65,11 @@ def session_signout_view(request):
     return Response({"message": "로그아웃 완료!"}, status=200)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_password_view(request):
+    serializer = UserPasswordUpdateSerializer(data=request.data, context={"request": request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "비밀번호 재설정 완(完)"}, status=200)
+    return Response(serializer.errors, status=400)
